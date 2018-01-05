@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="touming">#00000000</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="common_bg">#fcfcfc</color>
+    <color name="background_tab_pressed">#6633B5E5</color>
+    <color name="tip_bg">#f2f1f1</color>
+    <color name="tiyan_normal">#52C558</color>
+    <color name="teacher_text">#414141</color>
+
+    <color name="bottom_bar_normal_bg">#2D2F31</color>
+    <color name="common_bottom_bar_normal_bg">#2d2f31</color>
+    <color name="common_bottom_bar_selected_bg">#161718</color>
+    <color name="common_botton_bar_blue">#2ea7e0</color>
+    <color name="video_title_color">#2D8BFF</color>
+    <color name="video_title_color_deep">#4286d9</color>
+    <color name="text_color_default">#515151</color>
+    <color name="text_color_edit">#333333</color>
+    <color name="default_white">#fff</color>
+    <color name="pressed_gray">#e5e5e5</color>
+    <color name="item_book_pressed">#F3F5F7</color>
+    <color name="start_video_pressed_gray">#e7e7e7</color>
+</resources>

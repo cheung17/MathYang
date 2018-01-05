@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/item_book_selector"
+    android:orientation="vertical"
+    android:paddingBottom="20dp"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp"
+    android:paddingTop="10dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+        <com.math.yang.mathyang.view.RoundImageView
+            android:id="@+id/iv_avatar"
+            android:layout_width="@dimen/article_avatar_size"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:adjustViewBounds="true"
+
+            android:src="@drawable/ic_home_default" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="10dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_book_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="小学二年级数学上册"
+                android:textColor="#2C343C"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/tv_class_hours"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/tv_book_name"
+                android:layout_marginTop="10dp"
+                android:text="中级20课时"
+                android:textColor="#2C343C"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/tv_learn_people"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/tv_book_name"
+                android:layout_marginTop="10dp"
+                android:text="中级20课时"
+                android:textColor="#979BA0"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/tv_price"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_marginTop="10dp"
+                android:text="20课时"
+                android:textColor="#2C343C"
+                android:textSize="13sp" />
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+
+</LinearLayout>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="article_avatar_size">50dp</dimen>
+    <dimen name="banner_height">150dp</dimen>
+    <dimen name="banner_title">15sp</dimen>
+    <dimen name="title_height">50dp</dimen>
+</resources>
