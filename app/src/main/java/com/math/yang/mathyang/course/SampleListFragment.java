@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -12,23 +13,29 @@ import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
 
 import com.math.yang.mathyang.R;
+import com.math.yang.mathyang.activity.SelectDownlaodActivity;
+import com.math.yang.mathyang.adapter.UnitVideodapter;
+import com.math.yang.mathyang.db.SharedUtil;
 import com.math.yang.mathyang.model.BookTerm;
 import com.math.yang.mathyang.model.OrgBean;
+import com.math.yang.mathyang.model.UnitVideo;
+import com.math.yang.mathyang.orm.UnitDbUtil;
+import com.math.yang.mathyang.util.FileUtil;
+import com.math.yang.mathyang.util.JsonParseUtil;
 import com.math.yang.mathyang.util.ViewScrollUtil;
+import com.math.yang.mathyang.view.DownloadDialog;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SampleListFragment extends ScrollTabHolderFragment implements CourseDetailActivity.LoadIndexListener {
+public class SampleListFragment extends ScrollTabHolderFragment implements CourseDetailActivity.LoadIndexListener, AdapterView.OnItemClickListener {
     private static final String ARG_POSITION = "position";
     private ListView mListView;
     private ArrayList<String> mListItems;
@@ -36,6 +43,9 @@ public class SampleListFragment extends ScrollTabHolderFragment implements Cours
     private List<OrgBean> mIndexList = new ArrayList<>();
     private boolean isBookBought = false;
     private Context mContext;
+    private List<UnitVideo> mUnitList;
+    private UnitVideodapter mAdapter;
+    private FloatingActionButton floatDownload;
 
     public Context getContext() {
         return mContext;
@@ -61,51 +71,50 @@ public class SampleListFragment extends ScrollTabHolderFragment implements Cours
         mContext = super.getContext();
         View v = inflater.inflate(R.layout.fragment_tree_list, null);
         mListView = (ListView) v.findViewById(R.id.listView);
+        floatDownload = v.findViewById(R.id.float_download);
+        floatDownload.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showDownload();
+            }
+        });
         View placeHolderView = inflater.inflate(R.layout.view_header_placeholder, mListView, false);
         placeHolderView.setBackgroundColor(0xFFFFFFFF);
         mListView.addHeaderView(placeHolderView);
+        mListView.setOnItemClickListener(this);
         initData();
-        loadIndex();
         return v;
     }
 
-
-
-    private void setTreeView() {
-
+    private void showDownload() {
+       /* DownloadDialog dialog = new DownloadDialog(getActivity());
+        dialog.show();*/
+        Intent intent = new Intent(getActivity(), SelectDownlaodActivity.class);
+        intent.putExtra(SelectDownlaodActivity.EXTRA_DOWNLOAD_LIST, (Serializable) mUnitList);
+        startActivity(intent);
     }
+
+
+
 
     private void initData() {
 
-
     }
 
 
-    private BuyClickCallBack onBuyClickListener;
+    private UnitVideoEvent unitVideoEvent;
 
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         if (activity instanceof CourseDetailActivity) {
-            this.onBuyClickListener = (BuyClickCallBack) activity;
+            this.unitVideoEvent = (UnitVideoEvent) activity;
         }
     }
 
-
-
-
-    private void buyBook() {
-        if (onBuyClickListener != null) {
-            onBuyClickListener.onBuyClick();
-        }
-    }
 
     private void showToast(String s) {
         Toast.makeText(getActivity(), s, Toast.LENGTH_SHORT).show();
-    }
-
-    private void loadIndex() {
-
     }
 
 
@@ -136,8 +145,42 @@ public class SampleListFragment extends ScrollTabHolderFragment implements Cours
     }
 
     @Override
-    public void onLoadIndexSuccess(String courseId, BookTerm course) {
+    public void onLoadIndexSuccess(String courseId, BookTerm course, boolean isLocal) {
+        String index = FileUtil.getCourseIndex(courseId);
+        //;
+        List<UnitVideo> list = JsonParseUtil.parseUnitList(index);
+        mUnitList = list;
+        UnitDbUtil.saveList(list);
+        // JsonParseUtil.updateUnitList(list, mUnitList);
+        mAdapter = new UnitVideodapter(mUnitList, getContext());
+        mAdapter.notifyDataSetChanged();
+        mListView.setAdapter(mAdapter);
+        if (isLocal) {
+            playPosition((int) SharedUtil.getBookPlayPosition(getContext(), mUnitList.get(0).getBookid()), false);
+        }
+    }
 
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        playPosition(position - 1, true);
+    }
+
+    /**
+     * @param position 播放位置
+     * @param playNow  是立马播放吗
+     */
+    private void playPosition(int position, boolean playNow) {
+        if (mUnitList.get(position).getIspunit() == 1 || mUnitList.get(position).isPlaying()) {
+            return;
+        }
+        for (UnitVideo unitVideo : mUnitList) {
+            unitVideo.setPlaying(false);
+        }
+        mUnitList.get(position).setPlaying(true);
+        mAdapter.notifyDataSetChanged();
+        if (unitVideoEvent != null) {
+            unitVideoEvent.onVideoClickListener(mUnitList.get(position), position, playNow);
+        }
     }
 
 
@@ -151,6 +194,9 @@ public class SampleListFragment extends ScrollTabHolderFragment implements Cours
         @Override
         public void onScroll(AbsListView view, int firstVisibleItem,
                              int visibleItemCount, int totalItemCount) {
+            if(true){
+                return;
+            }
             if (mScrollTabHolder != null)
                 mScrollTabHolder.onScroll(ViewScrollUtil.getListViewScrollDistance(view), mPosition, mListView.getFirstVisiblePosition());
         }

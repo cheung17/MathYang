@@ -9,9 +9,9 @@
           <set>
             <option value="$PROJECT_DIR$/../CommonSDK" />
             <option value="$PROJECT_DIR$/../CommonSDK/common" />
-            <option value="$PROJECT_DIR$/../CommonSDK_Plugins" />
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
+            <option value="$PROJECT_DIR$/nicevideoplayer" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />

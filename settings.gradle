@@ -1,7 +1,5 @@
-include ':app'
+include ':app', 'nicevideoplayer'
 
 include ':CommonSDK'
 project(':CommonSDK').projectDir = new File('../CommonSDK/');
 include(':CommonSDK:common')
-include ':CommonSDK_Plugins'
-project(':CommonSDK_Plugins').projectDir = new File('../CommonSDK_Plugins/');

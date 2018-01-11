@@ -32,12 +32,13 @@
                     android:layout_height="@dimen/course_tab_height"
                     android:layout_gravity="bottom"
                     android:background="@color/tip_bg"
-                    app:pstsIndicatorColor="@color/tiyan_normal"
+                    app:pstsIndicatorColor="@color/colorAccent"
                     app:tabtextcolor="@color/teacher_text" />
             </FrameLayout>
         </FrameLayout>
-
     </LinearLayout>
+
+
 
     <include layout="@layout/include_title"></include>
 </RelativeLayout>

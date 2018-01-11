@@ -1,21 +1,17 @@
 package com.math.yang.mathyang.course;
 
 import android.annotation.SuppressLint;
-import android.graphics.Paint;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.util.SparseArrayCompat;
 import android.support.v4.view.ViewPager;
-import android.view.LayoutInflater;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -27,31 +23,29 @@ import com.commonsdk.http.util.OkHttpUtil;
 import com.commonsdk.network.NetUtils;
 import com.commonsdk.string.StringUtils;
 import com.math.yang.mathyang.R;
+import com.math.yang.mathyang.db.SharedUtil;
 import com.math.yang.mathyang.fragment.BookCommentFragment;
 import com.math.yang.mathyang.fragment.BookIntroFragment;
 import com.math.yang.mathyang.model.BookTerm;
+import com.math.yang.mathyang.model.UnitVideo;
 import com.math.yang.mathyang.model.UserData;
 import com.math.yang.mathyang.util.Constant;
 import com.math.yang.mathyang.util.FileUtil;
-import com.math.yang.mathyang.util.JsonParseUtil;
 import com.math.yang.mathyang.util.LL;
-import com.nostra13.universalimageloader.core.ImageLoader;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.xiao.nicevideoplayer.NiceVideoPlayer;
+import com.xiao.nicevideoplayer.NiceVideoPlayerManager;
+import com.xiao.nicevideoplayer.TxVideoPlayerController;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
 @SuppressLint("NewApi")
-public class CourseDetailActivity extends FragmentActivity implements ScrollTabHolder, ViewPager.OnPageChangeListener, View.OnClickListener, BuyClickCallBack {
+public class CourseDetailActivity extends AppCompatActivity implements ScrollTabHolder, ViewPager.OnPageChangeListener, View.OnClickListener, UnitVideoEvent {
     public static final boolean NEEDS_PROXY = Integer.valueOf(Build.VERSION.SDK_INT).intValue() < 11;
+    public static final String EXTRA_BOOK_TERM = "EXTRA_BOOK_TERM";
     private View mHeader;
     private PagerSlidingTabStrip mPagerSlidingTabStrip;
     private ViewPager mViewPager;
@@ -74,14 +68,18 @@ public class CourseDetailActivity extends FragmentActivity implements ScrollTabH
     private LinearLayout llFreeService, llPayService, llPrice;
     private UserData mUser;
     private TextView tvDownloadVideo;
+    private NiceVideoPlayer mVideoPlayer;
+    private TxVideoPlayerController mVideoController;
+
 
     @Override
-    public void onBuyClick() {
+    public void onBackPressed() {
+        if (NiceVideoPlayerManager.instance().onBackPressd()) return;
+        super.onBackPressed();
     }
 
-
     public interface LoadIndexListener {
-        void onLoadIndexSuccess(String courseId, BookTerm course);
+        void onLoadIndexSuccess(String courseId, BookTerm course, boolean isLocal);
 
     }
 
@@ -97,6 +95,7 @@ public class CourseDetailActivity extends FragmentActivity implements ScrollTabH
     private LoadIndexListener loadIndexListener;
     private LoadCourseListener loadCourseListener;
     private OnBuyBookSuccessListener onBuyBookListener;
+    private UnitVideoEvent onUnitVideoEvent;
 
     public void setOnBuyBookListener(OnBuyBookSuccessListener onBuyBookListener) {
         this.onBuyBookListener = onBuyBookListener;
@@ -105,6 +104,7 @@ public class CourseDetailActivity extends FragmentActivity implements ScrollTabH
     @Override
     public void onAttachFragment(Fragment fragment) {
         super.onAttachFragment(fragment);
+        initData();
         if (fragment instanceof LoadIndexListener) {
             this.loadIndexListener = (LoadIndexListener) fragment;
             new Handler().postDelayed(new Runnable() {
@@ -128,14 +128,28 @@ public class CourseDetailActivity extends FragmentActivity implements ScrollTabH
     }
 
     @Override
+    public void onVideoClickListener(UnitVideo unitVideo, int position, boolean playNow) {
+        //视频点击
+        mVideoPlayer.release();
+        mVideoPlayer.setUp(unitVideo.getVideo_url().startsWith("http:") ? unitVideo.getVideo_url() : Constant.FTPIP + unitVideo.getVideo_url(), null);
+        mVideoController.setTitle(unitVideo.getTitle());
+        if (playNow) {
+            mVideoPlayer.start();
+            SharedUtil.putBookPlayPosition(this, unitVideo.getBookid(), position);
+        }
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // requestWindowFeature(Window.FEATURE_NO_TITLE);
+        initData();
         mMinHeaderHeight = getResources().getDimensionPixelSize(R.dimen.course_banner_height);
         mHeaderHeight = getResources().getDimensionPixelSize(R.dimen.course_banner_height);
         mMinHeaderTranslation = -mMinHeaderHeight;
         setContentView(R.layout.activity_main_v);
+        initViews();
         mHeader = findViewById(R.id.header);
-        rlTitle = (RelativeLayout) findViewById(R.id.rl_title);
         mPagerSlidingTabStrip = (PagerSlidingTabStrip) findViewById(R.id.tabs);
         initFragment();
         mViewPager = (ViewPager) findViewById(R.id.pager);
@@ -145,43 +159,19 @@ public class CourseDetailActivity extends FragmentActivity implements ScrollTabH
         mViewPager.setAdapter(mPagerAdapter);
         mPagerSlidingTabStrip.setViewPager(mViewPager);
         mPagerSlidingTabStrip.setOnPageChangeListener(this);
-        initViews();
-        initData();
         loadData();
         mLastY = 0;
     }
 
     private void loadData() {
-
+        loadIndex();
     }
 
-
-    /**
-     * 课程
-     */
-    private Handler courseHandler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            switch (msg.what) {
-                case OkHttpUtil.Success:
-                    LL.ztx("课程" + msg.obj.toString());
-                    onColumnLoadSuucess(msg.obj.toString());
-                    break;
-                case OkHttpUtil.Faile:
-                    showToast("加载失败，请检查网络后重试");
-                    break;
-            }
-        }
-    };
 
     private void showToast(String s) {
         Toast.makeText(CourseDetailActivity.this, s, Toast.LENGTH_SHORT).show();
     }
 
-    private void onColumnLoadSuucess(String s) {
-
-    }
 
     private void loadCoureseOk() {
         if (loadCourseListener != null) {
@@ -190,24 +180,18 @@ public class CourseDetailActivity extends FragmentActivity implements ScrollTabH
     }
 
     private void onIndexLoadOk(String index, boolean isLocal) {
-        //目录加载成功
-        tvDownloadVideo.setVisibility(mUser.isManager() ? View.VISIBLE : View.GONE);
-        tvDownloadVideo.setVisibility(View.GONE);
         if (loadIndexListener != null) {
-            loadIndexListener.onLoadIndexSuccess(mBookTerm.getId(), mBookTerm);
+            loadIndexListener.onLoadIndexSuccess(mBookTerm.getId(), mBookTerm, isLocal);
         }
     }
+
     /**
      * 加载目录
      */
     private void loadIndex() {
         LL.ztx("下载目录");
         String url = "";
-        if (mBookTerm.getIndexUrl().startsWith("http")) {
-            url = mBookTerm.getIndexUrl();
-        } else {
-            url = Constant.FTPIP + mBookTerm.getIndexUrl();
-        }
+        url = Constant.URL_LOAD_BOOK_UNIT + "?" + Constant.BOOKID + "=" + mBookTerm.getId();
         OkHttpUtil.downloadFile(this, indexHandler, url, FileUtil.LOCAL_INDEX_PATH, mBookTerm.getId() + FileUtil.INDEX_PATTERN + ".temp", false);
     }
 
@@ -236,25 +220,32 @@ public class CourseDetailActivity extends FragmentActivity implements ScrollTabH
             }
         }
     };
-    private float money = 0;
 
-    private void setData() {
-        showViews(true);
-
-    }
 
     /**
-     * @param newDownload 刚刚下载成功
      */
     private void checkIndex(boolean newDownload) {
-
+        if (mBookTerm == null) {
+            return;
+        }
+        String index = FileUtil.getCourseIndex(mBookTerm.getId());
+        if (!StringUtils.isBlank(index)) {
+            onIndexLoadOk(index, !newDownload);
+            if (NetUtils.isConnected(this) && !newDownload) {
+                loadIndex();
+            }
+        }
     }
-
 
 
     private void initData() {
-
-
+        mBookTerm = (BookTerm) getIntent().getSerializableExtra(EXTRA_BOOK_TERM);
+        if (mBookTerm == null) {
+            finish();
+        }
+        if (tvTitle != null) {
+            tvTitle.setText(mBookTerm.getName());
+        }
     }
 
     /**
@@ -262,10 +253,31 @@ public class CourseDetailActivity extends FragmentActivity implements ScrollTabH
      */
     private void initViews() {
 
+        mVideoPlayer = (NiceVideoPlayer) findViewById(R.id.nicevideoplayer);
+        mVideoPlayer.setPlayerType(NiceVideoPlayer.TYPE_IJK); // or NiceVideoPlayer.TYPE_NATIVE
+        mVideoController = new TxVideoPlayerController(this);
+        mVideoPlayer.setController(mVideoController);
+        ivBack = (ImageView) findViewById(R.id.iv_back);
+        ivBack.setOnClickListener(this);
+        findViewById(R.id.tv_right).setVisibility(View.GONE);
+        rlTitle = (RelativeLayout) findViewById(R.id.rl_title);
+        tvTitle = (TextView) findViewById(R.id.tv_title);
+        rlTitle.getBackground().setAlpha(0);
+        ivBack.setAlpha(0);
+        tvTitle.setAlpha(0);
     }
 
-    private void showViews(boolean isShow) {
+    @Override
+    protected void onResume() {
+        super.onResume();
+        NiceVideoPlayerManager.instance().resumeNiceVideoPlayer();
+    }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        // 在onStop时释放掉播放器
+        NiceVideoPlayerManager.instance().releaseNiceVideoPlayer();
     }
 
     private List<ScrollTabHolderFragment> mFragmentList = new ArrayList<>();
@@ -273,7 +285,7 @@ public class CourseDetailActivity extends FragmentActivity implements ScrollTabH
     private void initFragment() {
         ScrollTabHolderFragment fragment = (ScrollTabHolderFragment) SampleListFragment.newInstance(0);
         ScrollTabHolderFragment fragment1 = BookIntroFragment.newInstance(1);
-        ScrollTabHolderFragment fragment2 =  BookCommentFragment.newInstance(2);
+        ScrollTabHolderFragment fragment2 = BookCommentFragment.newInstance(2);
         mFragmentList.add(fragment);
         mFragmentList.add(fragment1);
         mFragmentList.add(fragment2);
@@ -281,7 +293,7 @@ public class CourseDetailActivity extends FragmentActivity implements ScrollTabH
 
     @Override
     public void onPageScrollStateChanged(int arg0) {
-        // nothing
+
     }
 
     @Override
@@ -349,10 +361,16 @@ public class CourseDetailActivity extends FragmentActivity implements ScrollTabH
             int bannerHeight = (int) getResources().getDimension(R.dimen.banner_height);
             if (distance == 0) {
                 rlTitle.getBackground().setAlpha(0);
+                ivBack.setAlpha(0);
+                tvTitle.setAlpha(0);
             } else if (distance + titleAndTripHeight <= bannerHeight) {
                 rlTitle.getBackground().setAlpha((int) (((float) distance / bannerHeight) * 255));
+                ivBack.setAlpha((int) (((float) distance / bannerHeight) * 255));
+                tvTitle.setAlpha((int) (((float) distance / bannerHeight)));
             } else {
-                rlTitle.getBackground().setAlpha(255);
+                rlTitle.getBackground().setAlpha(0);
+                ivBack.setAlpha(0);
+                tvTitle.setAlpha(0);
             }
         }
     }
@@ -372,14 +390,6 @@ public class CourseDetailActivity extends FragmentActivity implements ScrollTabH
         }
     }
 
-    private int clickCount = 0;
-
-
-
-    int articleCount = 0;
-
-
-
 
     /**
      * 显示加载框
@@ -394,17 +404,7 @@ public class CourseDetailActivity extends FragmentActivity implements ScrollTabH
     }
 
 
-
-
-
     MaterialDialog mDialog;
-
-    private void addCourse() {
-        mDialog = new MaterialDialog.Builder(this)
-                .title("添加课程")
-                .progress(true, 0)
-                .show();
-    }
 
 
     public class PagerAdapter extends FragmentPagerAdapter {

@@ -1,9 +1,13 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="@dimen/course_banner_height_small"
-    android:background="@drawable/ic_book_bg"
-    android:paddingTop="10dp">
+    android:background="@drawable/ic_book_bg">
 
+    <com.xiao.nicevideoplayer.NiceVideoPlayer
+        android:id="@+id/nicevideoplayer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
+    </com.xiao.nicevideoplayer.NiceVideoPlayer>
 
 </RelativeLayout>

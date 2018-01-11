@@ -141,6 +141,7 @@ public class HomeFragment extends BaseFragment implements View.OnClickListener {
         if (getActivity() == null) {
             return;
         }
+
         OkHttpUtil.getParam(getActivity(), columnHandler, map, Constant.URL_GET_ALL_BOOKS, false);
     }
 
@@ -175,9 +176,6 @@ public class HomeFragment extends BaseFragment implements View.OnClickListener {
 
     private void onColumnLoadSuucess(String s) {
         mBookList = JsonParseUtil.parseBookList(s);
-        //mBookList.addAll(mBookList);
-        //mBookList.addAll(mBookList);
-        //mBookList.addAll(mBookList);
         mAdapter.list = mBookList;
         mRecycleview.notifyData();
     }
@@ -187,9 +185,6 @@ public class HomeFragment extends BaseFragment implements View.OnClickListener {
             Toast.makeText(getContext(), str + "", Toast.LENGTH_SHORT).show();
         }
     }
-
-    //   private LinearLayoutManager staggeredGridLayoutManager;
-
     /**
      * recycleview初始化
      */
@@ -252,7 +247,7 @@ public class HomeFragment extends BaseFragment implements View.OnClickListener {
             public void onItemClick(View view, int position) {
                 if (mBookList.get(position).getShowtype() == BookTerm.TYPE_BOOK) {
                     Intent intent = new Intent(getActivity(), CourseDetailActivity.class);
-                    intent.putExtra(BookDetailActivity.EXTRA_BOOK, mBookList.get(position));
+                    intent.putExtra(CourseDetailActivity.EXTRA_BOOK_TERM, mBookList.get(position));
                     startActivity(intent);
                 } else if (mBookList.get(position).getShowtype() == BookTerm.TYPE_BANNER) {
 

@@ -3,10 +3,10 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/../CommonSDK/CommonSDK.iml" filepath="$PROJECT_DIR$/../CommonSDK/CommonSDK.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../CommonSDK_Plugins/CommonSDK_Plugins.iml" filepath="$PROJECT_DIR$/../CommonSDK_Plugins/CommonSDK_Plugins.iml" />
       <module fileurl="file://$PROJECT_DIR$/MathYang.iml" filepath="$PROJECT_DIR$/MathYang.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/../CommonSDK/common/common.iml" filepath="$PROJECT_DIR$/../CommonSDK/common/common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/nicevideoplayer/nicevideoplayer.iml" filepath="$PROJECT_DIR$/nicevideoplayer/nicevideoplayer.iml" />
     </modules>
   </component>
 </project>

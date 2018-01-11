@@ -2,9 +2,14 @@ package com.math.yang.mathyang;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.support.multidex.MultiDex;
 
+import com.litesuits.orm.db.DataBaseConfig;
+import com.liulishuo.filedownloader.FileDownloader;
+import com.math.yang.mathyang.download.DownloadService;
+import com.math.yang.mathyang.orm.MathOrm;
 import com.nostra13.universalimageloader.cache.memory.impl.LruMemoryCache;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -16,10 +21,21 @@ import com.nostra13.universalimageloader.core.download.BaseImageDownloader;
  */
 
 public class MyApplication extends Application {
+    /**
+     * 数据库名称
+     */
+    public final static String BOOK_DB = "math_db";
+
     @Override
     public void onCreate() {
         super.onCreate();
         initImageLoader();
+        FileDownloader.init(getApplicationContext());
+        DataBaseConfig dBaseConfig = new DataBaseConfig(getApplicationContext(), BOOK_DB);
+        MathOrm.init(dBaseConfig);
+        Intent serviceIntent = new Intent(getApplicationContext(), DownloadService.class);
+        startService(serviceIntent);
+
     }
 
     private void initImageLoader() {

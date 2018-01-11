@@ -45,7 +45,8 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
     compile project(path: ':CommonSDK:common')
+    compile project(':nicevideoplayer')
     compile 'com.afollestad.material-dialogs:core:0.9.4.4'
     compile 'com.android.support:multidex:1.0.1'
-
+    compile 'com.liulishuo.filedownloader:library:1.4.3'
 }

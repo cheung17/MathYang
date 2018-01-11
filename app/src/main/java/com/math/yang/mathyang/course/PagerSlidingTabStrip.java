@@ -222,7 +222,7 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
                 scrollToChild(currentPosition, 0);
             }
         });
-
+//
     }
 
     private void addTextTab(final int position, String title) {
@@ -366,6 +366,24 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
             if (delegatePageListener != null) {
                 delegatePageListener.onPageScrolled(position, positionOffset, positionOffsetPixels);
             }
+            //indicator变色
+          /*  for (int i = 0; i < tabCount; i++) {
+                if (tabsContainer.getChildCount() > position) {
+                    for (int j = 0; j < tabsContainer.getChildCount(); j++) {
+                        if (tabsContainer.getChildAt(j) instanceof TextView) {
+                            ((TextView) tabsContainer.getChildAt(j)).setTextColor(indicatorColor);
+                        }
+                    }
+                } else {
+                    for (int j = 0; j < tabsContainer.getChildCount(); j++) {
+                        if (tabsContainer.getChildAt(j) instanceof TextView) {
+                            ((TextView) tabsContainer.getChildAt(j)).setTextColor(tabTextColor);
+                        }
+                    }
+                }
+
+            }*/
+
         }
 
         @Override

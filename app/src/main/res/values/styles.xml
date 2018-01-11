@@ -8,4 +8,35 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="notitle" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:windowNoTitle">true</item>
+    </style>
+
+    <style name="launch_out_activity" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowAnimationStyle">@style/dialog_anim</item>
+    </style>
+
+    <style name="dialog_anim">
+        <item name="android:windowEnterAnimation">@anim/dialog_bottom_in</item>
+        <!-- 指定显示的动画xml -->
+        <item name="android:windowExitAnimation">@anim/dialog_bottom_out</item>
+        <!-- 指定消失的动画xml -->
+    </style>
+
+    <style name="activity_inout">
+        <item name="android:activityOpenEnterAnimation">@anim/dialog_bottom_in</item>
+        <!-- 指定显示的动画xml -->
+        <item name="android:activityCloseExitAnimation">@anim/dialog_bottom_out</item>
+        <!-- 指定消失的动画xml -->
+    </style>
+
+    <style name="fulldialog" parent="@android:style/Theme.Dialog">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
+
+
 </resources>
